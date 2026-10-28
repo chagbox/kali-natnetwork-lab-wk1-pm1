@@ -1,0 +1,7 @@
+# command: nmcli -f ipv4.method,ipv4.addresses,ipv4.gateway,ipv4.dns connection show Wired connection 1
+# captured: 2026-10-28 23:21:49 WAT
+
+ipv4.method:                            manual
+ipv4.addresses:                         10.0.0.2/24
+ipv4.gateway:                           10.0.0.1
+ipv4.dns:                               8.8.8.8

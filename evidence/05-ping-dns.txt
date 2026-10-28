@@ -1,0 +1,10 @@
+# command: ping -c 3 google.com
+# captured: 2026-10-28 23:21:49 WAT
+
+PING google.com (142.250.181.110) 56(84) bytes of data.
+64 bytes from ncmrsa-ao-in-f14.1e100.net (142.250.181.110): icmp_seq=2 ttl=64 time=364 ms
+64 bytes from ncmrsa-ao-in-f14.1e100.net (142.250.181.110): icmp_seq=3 ttl=64 time=284 ms
+
+--- google.com ping statistics ---
+3 packets transmitted, 2 received, 33.3333% packet loss, time 2100ms
+rtt min/avg/max/mdev = 284.362/324.116/363.871/39.754 ms

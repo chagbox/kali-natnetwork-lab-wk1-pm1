@@ -35,9 +35,9 @@ I built an isolated attack lab: a Kali Linux virtual machine on its own private 
 │ │ gateway 10.0.0.1                                │ │
 │ │                                                 │ │
 │ │ ┌───────────────────┐  ┌──────────────────────┐ │ │
-│ │ │ Kali 2026.2 VM    │  │ spare range          │ │ │
-│ │ │ 10.0.0.2/24       │  │ 10.0.0.3 - 10.0.0.99 │ │ │
-│ │ │ the attacker      │  │ empty today          │ │ │
+│ │ │ Kali 2026.2 VM    │  │ unused address space │ │ │
+│ │ │ 10.0.0.2/24       │  │ empty today          │ │ │
+│ │ │ the attacker      │  │                      │ │ │
 │ │ └───────────────────┘  └──────────────────────┘ │ │
 │ └─────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────┘
@@ -46,7 +46,7 @@ I built an isolated attack lab: a Kali Linux virtual machine on its own private 
              Internet (via the host)
 ```
 
-There are two Kalis in this project, and that is deliberate. My laptop runs Kali as my daily machine. The lab is a second Kali inside VirtualBox. The laptop is where I write, commit and push; the VM is where the lab lives and where anything risky will happen. That also means no GitHub credentials ever sit inside the attack machine.
+There are two Kalis in this project, and that is deliberate. My laptop runs Kali as the host machine. The lab is a second Kali inside VirtualBox. The host is where I write and document; the VM is where the lab lives and where anything risky will happen. I push to GitHub from a host machine, so no GitHub credentials ever sit inside the attack VM.
 
 ---
 
@@ -63,7 +63,7 @@ The Kali VM's Adapter 1 is attached to the NAT Network, not to plain NAT. Withou
 ![Kali adapter](screenshots/02-kali-adapter.png)
 
 ### Entry 3: Moving files and text between host and lab
-Clipboard and drag/drop are set to bidirectional, and the host's Downloads folder is shared into the VM, as the task requires. This is the convenience channel between the two machines. It is also the one place where the lab touches the host's files, so I treat it with care (see the security notes below).
+Clipboard and drag/drop are set to bidirectional, and the host's Downloads folder is shared into the VM, as the task requires. This is the convenience channel between the two machines. It is also the one place where the lab touches the host's files, so I treat it with care (see "Why it's built this way" below).
 
 ![Shared folders](screenshots/03-shared-folders.png)
 
@@ -77,6 +77,8 @@ ipv4.addresses:                         10.0.0.2/24
 ipv4.gateway:                           10.0.0.1
 ipv4.dns:                               8.8.8.8
 ```
+
+Raw output: [evidence/07-nmcli-config.txt](evidence/07-nmcli-config.txt)
 
 ![Kali IP](screenshots/04-kali-ip.png)
 
@@ -151,7 +153,7 @@ With everything verified, I took a snapshot. A snapshot taken after the checks p
 I'd rather record the odd results than hide them.
 
 - **The gateway replies in about 0.2 ms.** That fits a virtual router running on the same machine.
-- **The google.com test lost a packet.** The first echo (`icmp_seq=1`) got no reply and the next two did, while the same test to `8.8.8.8` was clean. My best guess is the first packet went out while the name was still being resolved. I have not confirmed that.
+- **The google.com test lost a packet.** The first echo got no reply and the next two did, while the same test to `8.8.8.8` was clean. `ping` resolves the name before it sends anything, so a DNS delay does not explain it. I have not yet repeated the test with more packets to see whether the loss recurs, and I have not found the cause.
 - **Replies from the Internet show `ttl=64`.** A real server far away would normally reply with a different TTL. My reading is that VirtualBox's NAT is answering the ping itself instead of passing it through. This is my interpretation and I have not verified it.
 - **Latency is high and uneven** (106 to 364 ms). That points at the upstream connection, not the lab, since the gateway answers instantly.
 
@@ -182,8 +184,8 @@ sudo nmcli connection up "Wired connection 1"
 
 - **Isolation.** The NAT Network keeps lab machines off my home network. Traffic can leave, but nothing outside can start a connection in.
 - **Disposable attacker.** The attack machine is a VM with a snapshot, so a mistake costs a restore, not a rebuild.
-- **Credentials stay out of the lab.** I push to GitHub from the laptop, never from the attack VM.
-- **The shared folder is a bridge.** It exposes part of the host to the VM, so I only put files there that the lab needs and I'm careful with untrusted tools.
+- **Credentials stay out of the lab.** I push to GitHub from a host machine, never from the attack VM.
+- **Shared folder scope.** The task shares the host's Downloads folder, which means anything running in the VM can read it. In a real engagement I would share a dedicated `lab-share` folder, read-only where possible.
 - **Authorised targets only.** This lab is for learning. I test only systems I own or have written permission to test.
 
 ---
